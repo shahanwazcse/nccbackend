@@ -4,8 +4,7 @@ const cors = require("cors");
 
 const app = express();
 app.use(cors({
-  origin: "https://nisardigitalhub.netlify.app",
-  credentials: true
+  origin: "*"
 }));
 app.use(express.json());
 require("dotenv").config();
