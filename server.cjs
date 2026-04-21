@@ -31,6 +31,7 @@ const bookingSchema = new mongoose.Schema({
   time: String,
   createdAt: String,
   status: String,
+  bookingId: String,
 });
 
 const adSchema = new mongoose.Schema({
@@ -46,6 +47,7 @@ const newsSchema = new mongoose.Schema({
   date: String,
   category: String,
 });
+
 const videoSchema = new mongoose.Schema({
   title: String,
   youtubeId: String,
@@ -56,6 +58,12 @@ const adminSchema = new mongoose.Schema({
   password: String,
   resetToken: String, // ✅ ADD THIS
 });
+const counterSchema = new mongoose.Schema({
+  name: String,
+  seq: Number,
+});
+
+const Counter = mongoose.model("Counter", counterSchema);
 
 const Admin = mongoose.model("Admin", adminSchema);
 
@@ -67,7 +75,14 @@ const Ad = mongoose.model("Ad", adSchema);
 const Booking = mongoose.model("Booking", bookingSchema);
 
 const Service = mongoose.model("Service", serviceSchema);
-
+async function getNextSequence(name) {
+  const counter = await Counter.findOneAndUpdate(
+    { name },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true }
+  );
+  return counter.seq;
+}
 
 // CREATE SERVICE
 app.post("/api/services", async (req, res) => {
@@ -82,7 +97,14 @@ app.post("/api/services", async (req, res) => {
 // CREATE BOOKING
 app.post("/api/bookings", async (req, res) => {
   try {
-    const booking = new Booking(req.body);
+const seq = await getNextSequence("booking");
+
+const bookingId = `NISAR/${seq}`;
+
+const booking = new Booking({
+  ...req.body,
+  bookingId,
+});
     const saved = await booking.save();
     res.json(saved);
   } catch (err) {
