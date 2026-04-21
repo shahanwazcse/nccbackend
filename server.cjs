@@ -131,6 +131,29 @@ app.put("/api/bookings/:id", async (req, res) => {
   res.json(updated);
 });
 
+
+app.delete("/api/bookings/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // ✅ Validate MongoDB ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid booking ID" });
+    }
+
+    const deleted = await Booking.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    res.json({ message: "Booking deleted successfully", deleted });
+  } catch (err) {
+    console.error("DELETE ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // CREATE AD
 app.post("/api/ads", async (req, res) => {
   const ad = new Ad(req.body);
@@ -283,5 +306,6 @@ app.post("/api/admin/reset-password/:token", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
