@@ -46,6 +46,7 @@ const newsSchema = new mongoose.Schema({
   description: String,
   date: String,
   category: String,
+  link: String, // ✅ ADD THIS
 });
 
 const videoSchema = new mongoose.Schema({
@@ -205,11 +206,22 @@ app.put("/api/ads/:id", async (req, res) => {
 });
 // CREATE NEWS
 app.post("/api/news", async (req, res) => {
-  const news = new News(req.body);
+  console.log("REQ BODY:", req.body); // 🔍 debug
+
+  const news = new News({
+    title: req.body.title,
+    description: req.body.description,
+    date: req.body.date,
+    category: req.body.category,
+    link: req.body.link || "", // ✅ FORCE SAVE LINK
+  });
+
   const saved = await news.save();
+
+  console.log("SAVED:", saved); // 🔍 debug
+
   res.json(saved);
 });
-
 // GET ALL NEWS
 app.get("/api/news", async (req, res) => {
   const news = await News.find().sort({ date: -1 });
@@ -226,9 +238,16 @@ app.delete("/api/news/:id", async (req, res) => {
 app.put("/api/news/:id", async (req, res) => {
   const updated = await News.findByIdAndUpdate(
     req.params.id,
-    req.body,
+    {
+      title: req.body.title,
+      description: req.body.description,
+      date: req.body.date,
+      category: req.body.category,
+      link: req.body.link || "", // ✅ ALSO HERE
+    },
     { new: true }
   );
+
   res.json(updated);
 });
 // CREATE VIDEO
